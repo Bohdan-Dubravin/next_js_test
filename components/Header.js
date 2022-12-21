@@ -6,8 +6,11 @@ import AddCircleOutlineOutlinedIcon from "@mui/icons-material/AddCircleOutlineOu
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import Avatar from "@mui/material/Avatar";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export const Header = () => {
+  const { data: session } = useSession();
+
   return (
     <header className="sticky top-0 z-20 border-b shadow-sm flex justify-between bg-white max-w-6xl mx-5 lg:mx-auto">
       <div className="relative w-24 h-10  hidden lg:inline-grid cursor-pointer">
@@ -34,21 +37,28 @@ export const Header = () => {
       </div>
       <div className="flex items-center justify-end space-x-4">
         <HomeIcon className="navBtn h-6" />
-        <MenuOutlinedIcon className="md:hidden cursor-pointer" />
-        <div className="relative">
-          <div className="hidden md:flex z-10 w-5 h-5 text-white text-xs absolute top-[-5px] right-[-5px] bg-red-500 rounded-full  items-center justify-center animate-pulse">
-            3
-          </div>
-          <SendOutlinedIcon className="navBtn -rotate-45 -translate-y-1" />
-        </div>
-        <AddCircleOutlineOutlinedIcon className="navBtn" />
-        <PeopleAltOutlinedIcon className="navBtn" />
-        <FavoriteBorderOutlinedIcon className="navBtn" />
-        <Avatar
-          className="h-8 w-8"
-          alt="Me"
-          src=""
-        />
+        {session ? (
+          <>
+            <MenuOutlinedIcon className="md:hidden cursor-pointer" />
+            <div className="relative">
+              <div className="hidden md:flex z-10 w-5 h-5 text-white text-xs absolute top-[-5px] right-[-5px] bg-red-500 rounded-full  items-center justify-center animate-pulse">
+                3
+              </div>
+              <SendOutlinedIcon className="navBtn -rotate-45 -translate-y-1" />
+            </div>
+            <AddCircleOutlineOutlinedIcon className="navBtn" />
+            <PeopleAltOutlinedIcon className="navBtn" />
+            <FavoriteBorderOutlinedIcon className="navBtn" />
+            <Avatar
+              onClick={signOut}
+              className="h-8 w-8"
+              alt={session.user?.image}
+              src={session.user?.name}
+            />
+          </>
+        ) : (
+          <button onClick={signIn}>Sign Up</button>
+        )}
       </div>
     </header>
   );
