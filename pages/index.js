@@ -3,10 +3,12 @@ import { Inter } from "@next/font/google";
 import styles from "../styles/Home.module.css";
 import { Header } from "../components/Header";
 import Feed from "../components/Feed";
-
-const inter = Inter({ subsets: ["latin"] });
+import { useSelector } from "react-redux";
+import ModalComponent from "../components/ModalComponent";
 
 export default function Home() {
+  const { show } = useSelector((state) => state.modal);
+
   return (
     <div className="bg-gray-50 h-screen overflow-y-scroll scrollbar-hide">
       <Head>
@@ -26,6 +28,7 @@ export default function Home() {
       </Head>
       <Header />
       <Feed />
+      <ModalComponent />
     </div>
   );
 }

@@ -7,19 +7,31 @@ import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import Avatar from "@mui/material/Avatar";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import { showModal } from "../redux/slices/modalSlice";
 
 export const Header = () => {
+  const { show } = useSelector((state) => state.modal);
+  const dispatch = useDispatch();
   const { data: session } = useSession();
+  const router = useRouter();
 
   return (
     <header className="sticky top-0 z-20 border-b shadow-sm flex justify-between bg-white max-w-6xl mx-5 lg:mx-auto">
-      <div className="relative w-24 h-10  hidden lg:inline-grid cursor-pointer">
+      <div
+        onClick={() => router.push("/")}
+        className="relative w-24 h-10  hidden lg:inline-grid cursor-pointer"
+      >
         <Image
           fill
           src="https://links.papareact.com/ocw"
         />
       </div>
-      <div className="relative w-10 h-10 lg:hidden cursor-pointer">
+      <div
+        onClick={() => router.push("/")}
+        className="relative w-10 h-10 lg:hidden cursor-pointer"
+      >
         <Image
           fill
           src="https://links.papareact.com/jjm"
@@ -36,7 +48,10 @@ export const Header = () => {
         />
       </div>
       <div className="flex items-center justify-end space-x-4">
-        <HomeIcon className="navBtn h-6" />
+        <HomeIcon
+          onClick={() => router.push("/")}
+          className="navBtn h-6"
+        />
         {session ? (
           <>
             <MenuOutlinedIcon className="md:hidden cursor-pointer" />
@@ -46,14 +61,17 @@ export const Header = () => {
               </div>
               <SendOutlinedIcon className="navBtn -rotate-45 -translate-y-1" />
             </div>
-            <AddCircleOutlineOutlinedIcon className="navBtn" />
+            <AddCircleOutlineOutlinedIcon
+              onClick={() => dispatch(showModal())}
+              className="navBtn"
+            />
             <PeopleAltOutlinedIcon className="navBtn" />
             <FavoriteBorderOutlinedIcon className="navBtn" />
             <Avatar
               onClick={signOut}
               className="h-8 w-8"
-              alt={session.user?.image}
-              src={session.user?.name}
+              alt="user img"
+              src={session.user?.image}
             />
           </>
         ) : (
