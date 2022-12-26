@@ -1,62 +1,34 @@
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import getUsers from "../utils/faker";
+import { db } from "../fireBase";
 import Post from "./Post";
 
 const Posts = () => {
-  const data = [
-    {
-      id: "123",
-      username: "Name",
-      userImg: "https://links.papareact.com/3ke",
-      img: "https://links.papareact.com/3ke",
-      caption: "SUBSCRIBE RIGHT NOW THEN SOONER THAN BETTER!!!",
-    },
-    {
-      id: "123",
-      username: "Name",
-      userImg: "https://links.papareact.com/3ke",
-      img: "https://links.papareact.com/3ke",
-      caption: "SUBSCRIBE RIGHT NOW THEN SOONER THAN BETTER!!!",
-    },
-    {
-      id: "123",
-      username: "Name",
-      userImg: "https://links.papareact.com/3ke",
-      img: "https://links.papareact.com/3ke",
-      caption: "SUBSCRIBE RIGHT NOW THEN SOONER THAN BETTER!!!",
-    },
-    {
-      id: "123",
-      username: "Name",
-      userImg: "https://links.papareact.com/3ke",
-      img: "https://links.papareact.com/3ke",
-      caption: "SUBSCRIBE RIGHT NOW THEN SOONER THAN BETTER!!!",
-    },
-    {
-      id: "123",
-      username: "Name",
-      userImg: "https://links.papareact.com/3ke",
-      img: "https://links.papareact.com/3ke",
-      caption: "SUBSCRIBE RIGHT NOW THEN SOONER THAN BETTER!!!",
-    },
-  ];
-  // const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState([]);
 
-  // useEffect(() => {
-  //   const users = [...Array(20)].map((_, i) => {
-  //     return getUsers();
-  //   });
-  //   setPosts(users);
-  //   console.log("worked");
-  // }, []);
+  useEffect(() => {
+    const unsub = onSnapshot(
+      query(collection(db, "posts"), orderBy("timestamp", "desc")),
+      (snapShot) => {
+        console.log(snapShot);
+        setPosts(snapShot.docs);
+      }
+    );
+
+    return () => {
+      unsub();
+    };
+  }, [db]);
 
   return (
     <div className="">
-      {data.map((d) => {
+      {posts.map((post) => {
+        const p = { ...post.data(), id: post.id };
+
         return (
           <Post
-            key={d.id}
-            data={d}
+            key={p.id}
+            data={p}
           />
         );
       })}

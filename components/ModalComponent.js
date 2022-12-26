@@ -1,20 +1,20 @@
-import { Button, IconButton, Paper } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
-import { hideModal } from '../redux/slices/modalSlice';
-import Modal from '@mui/material/Modal';
-import CloseIcon from '@mui/icons-material/Close';
-import PhotoCamera from '@mui/icons-material/PhotoCamera';
-import { useRef, useState } from 'react';
+import { Button, IconButton, Paper } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { hideModal } from "../redux/slices/modalSlice";
+import Modal from "@mui/material/Modal";
+import CloseIcon from "@mui/icons-material/Close";
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
+import { useRef, useState } from "react";
 import {
   addDoc,
   collection,
   doc,
   serverTimestamp,
   updateDoc,
-} from 'firebase/firestore';
-import { db, storage } from '../fireBase';
-import { useSession } from 'next-auth/react';
-import { ref, getDownloadURL, uploadString } from 'firebase/storage';
+} from "firebase/firestore";
+import { db, storage } from "../fireBase";
+import { useSession } from "next-auth/react";
+import { ref, getDownloadURL, uploadString } from "firebase/storage";
 
 const ModalComponent = () => {
   const { data: session } = useSession();
@@ -38,7 +38,7 @@ const ModalComponent = () => {
   const uploadPost = async () => {
     setLoading(true);
 
-    const docRef = await addDoc(collection(db, 'posts'), {
+    const docRef = await addDoc(collection(db, "posts"), {
       username: session.user.username,
       caption: captionRef.current.value,
       profileImg: session.user.image,
@@ -49,9 +49,9 @@ const ModalComponent = () => {
 
     const imageRef = ref(storage, `posts/${docRef.id}/image`);
 
-    await uploadString(imageRef, picture, 'data_url').then(async (snapshot) => {
+    await uploadString(imageRef, picture, "data_url").then(async (snapshot) => {
       const downloadUrl = await getDownloadURL(imageRef);
-      await updateDoc(doc(db, 'posts', docRef.id), {
+      await updateDoc(doc(db, "posts", docRef.id), {
         image: downloadUrl,
       });
     });
@@ -119,7 +119,7 @@ const ModalComponent = () => {
           disabled={loading}
           onClick={uploadPost}
         >
-          {loading ? 'Uploading...' : 'Upload Post'}
+          {loading ? "Uploading..." : "Upload Post"}
         </Button>
       </Paper>
     </Modal>
