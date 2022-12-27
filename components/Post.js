@@ -9,20 +9,26 @@ import SmsOutlinedIcon from "@mui/icons-material/SmsOutlined";
 import SentimentSatisfiedAltOutlinedIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import Moment from "react-moment";
 import {
   addDoc,
   collection,
+  doc,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "../fireBase";
+
 const Post = ({ data }) => {
   const { id, username, profileImg, image, caption } = data;
   const { data: session } = useSession();
-  const [commentsList, setCommentsList] = useState(null);
+  const [commentsList, setCommentsList] = useState([]);
   const [comment, setComment] = useState("");
+  const [likes, setLikes] = useState([""]);
+  const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
     const addedComment = onSnapshot(
@@ -38,6 +44,28 @@ const Post = ({ data }) => {
       addedComment();
     };
   }, [db]);
+
+  useEffect(() => {
+    const addedLike = onSnapshot(
+      query(collection(db, "posts", id, "likes"), orderBy("timeStamp", "desc")),
+      (snapShot) => {
+        setLikes(snapShot.docs);
+      }
+    );
+    return () => {
+      addedLike();
+    };
+  }, [db]);
+
+  useEffect(() => {
+    setHasLiked(likes.findIndex((like) => like.id === session?.user.uid));
+  }, [likes]);
+
+  const likePost = async () => {
+    await setDoc(doc(db, "posts", id, "likes", session.user.uid), {
+      username: session.user.username,
+    });
+  };
 
   const sendComment = async (e) => {
     e.preventDefault();
@@ -68,19 +96,22 @@ const Post = ({ data }) => {
         <p className="flex-1 font-bold">{username}</p>
         <MoreHorizIcon className="cursor-pointer" />
       </div>
-      <div className="relative w-full h-[500px]">
+      <div className="relative w-full h-[250px] sm:h-[500px]">
         <Image
           loader={() => image}
           src={image}
           fill
-          className="object-cover"
+          className="object-cover object-center"
           alt="post img"
         />
       </div>
       {session && (
         <div className="flex justify-between p-4">
           <div className="flex space-x-4">
-            <FavoriteBorderOutlinedIcon className="btn" />
+            <FavoriteBorderOutlinedIcon
+              onClick={likePost}
+              className="btn"
+            />
             {/* <FavoriteIcon color="error" /> */}
             <SmsOutlinedIcon className="btn" />
             <SendOutlinedIcon className="btn" />
@@ -92,7 +123,37 @@ const Post = ({ data }) => {
         <span className="font-bold mr-1">{username}</span>
         {caption}
       </div>
-
+      {commentsList.length > 0 && (
+        <div className="ml-[20px] h-20 overflow-y-scroll scrollbar-thumb-black scrollbar-thin">
+          {commentsList.map((comment) => {
+            return (
+              <div
+                key={comment.id}
+                className="flex space-x-2 items-center mb-3"
+              >
+                <Avatar
+                  src={comment.data().userImage}
+                  alt="author comment img"
+                  className="h-[20px] w-[20px]"
+                  sx={{ width: 34, height: 34 }}
+                />
+                <p className="text-sm flex-1">
+                  <span className="font-bold mr-2 ">
+                    {comment.data().username}
+                  </span>
+                  {comment.data().comment}
+                </p>
+                <Moment
+                  className="text-xs pr-5"
+                  fromNow
+                >
+                  {comment.data().timeStamp?.toDate()}
+                </Moment>
+              </div>
+            );
+          })}
+        </div>
+      )}
       {session && (
         <form className="flex items-center p-4">
           <SentimentSatisfiedAltOutlinedIcon className=" mr-2" />
