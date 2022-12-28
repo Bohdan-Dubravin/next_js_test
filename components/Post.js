@@ -13,6 +13,7 @@ import Moment from "react-moment";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   onSnapshot,
   orderBy,
@@ -27,7 +28,7 @@ const Post = ({ data }) => {
   const { data: session } = useSession();
   const [commentsList, setCommentsList] = useState([]);
   const [comment, setComment] = useState("");
-  const [likes, setLikes] = useState([""]);
+  const [likes, setLikes] = useState([]);
   const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ const Post = ({ data }) => {
 
   useEffect(() => {
     const addedLike = onSnapshot(
-      query(collection(db, "posts", id, "likes"), orderBy("timeStamp", "desc")),
+      collection(db, "posts", id, "likes"),
       (snapShot) => {
         setLikes(snapShot.docs);
       }
@@ -58,13 +59,21 @@ const Post = ({ data }) => {
   }, [db]);
 
   useEffect(() => {
-    setHasLiked(likes.findIndex((like) => like.id === session?.user.uid));
+    setHasLiked(
+      likes.findIndex((like) => like.id === session?.user.uid) !== -1
+    );
   }, [likes]);
 
   const likePost = async () => {
-    await setDoc(doc(db, "posts", id, "likes", session.user.uid), {
-      username: session.user.username,
-    });
+    if (!hasLiked) {
+      await setDoc(doc(db, "posts", id, "likes", session.user.uid), {
+        username: session.user.username,
+      });
+    } else {
+      await deleteDoc(doc(db, "posts", id, "likes", session.user.uid), {
+        username: session.user.username,
+      });
+    }
   };
 
   const sendComment = async (e) => {
@@ -108,11 +117,17 @@ const Post = ({ data }) => {
       {session && (
         <div className="flex justify-between p-4">
           <div className="flex space-x-4">
-            <FavoriteBorderOutlinedIcon
-              onClick={likePost}
-              className="btn"
-            />
-            {/* <FavoriteIcon color="error" /> */}
+            {!hasLiked ? (
+              <FavoriteBorderOutlinedIcon
+                onClick={likePost}
+                className="btn"
+              />
+            ) : (
+              <FavoriteIcon
+                onClick={likePost}
+                color="error"
+              />
+            )}
             <SmsOutlinedIcon className="btn" />
             <SendOutlinedIcon className="btn" />
           </div>
@@ -120,6 +135,11 @@ const Post = ({ data }) => {
         </div>
       )}
       <div className="p5 truncate p-4">
+        {likes.length > 0 && (
+          <p className="font-bold mb-1">
+            {likes.length} {likes.length < 2 ? "Like" : "Likes"}
+          </p>
+        )}
         <span className="font-bold mr-1">{username}</span>
         {caption}
       </div>
